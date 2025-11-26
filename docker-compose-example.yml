@@ -1,0 +1,16 @@
+services:
+  aoc-slack-bot:
+    build: .
+    container_name: aoc-slack-bot
+    restart: unless-stopped
+    environment:
+      AOC_YEAR: "<year>"
+      AOC_LEADERBOARD_ID: "<leaderboard id>"
+      AOC_SESSION: "<session token>"
+      SLACK_WEBHOOK_URL: "<webhook url for the channel>"
+      TZ: "Europe/Berlin"
+    volumes:
+      - aoc-slack-state:/data
+
+volumes:
+  aoc-slack-state:
