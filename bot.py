@@ -139,7 +139,7 @@ def main():
         save_star_set(current)
 
     schedule.every(15).minutes.do(job_check_new_stars)
-    schedule.every().day.at("23:59").do(job_daily_summary)
+    schedule.every().day.at("05:59").do(job_daily_summary)
 
     print("Scheduler started.")
     while True:
