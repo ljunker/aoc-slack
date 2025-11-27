@@ -68,14 +68,13 @@ def save_star_set(star_set):
 # === Slack webhook helper ===
 
 def slack_post(text):
-    print(text)
-    # payload = {"text": text}
-    # try:
-    #     resp = requests.post(SLACK_WEBHOOK_URL, json=payload, timeout=10)
-    #     if not resp.ok:
-    #         print(f"Slack webhook error: {resp.status_code} {resp.text}")
-    # except Exception as e:
-    #     print(f"Slack webhook exception: {e}")
+    payload = {"text": text}
+    try:
+        resp = requests.post(SLACK_WEBHOOK_URL, json=payload, timeout=10)
+        if not resp.ok:
+            print(f"Slack webhook error: {resp.status_code} {resp.text}")
+    except Exception as e:
+        print(f"Slack webhook exception: {e}")
 
 
 # === Jobs ===
