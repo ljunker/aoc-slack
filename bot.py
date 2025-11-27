@@ -15,7 +15,7 @@ AOC_SESSION = os.environ["AOC_SESSION"]
 SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
 TIMEZONE = os.getenv("TZ", "Europe/Berlin")
 
-STATE_FILE = Path("/data/aoc_state.json")
+STATE_FILE = Path(os.getenv("STATE_FILE", "/data/aoc_state.json"))
 AOC_URL = f"https://adventofcode.com/{AOC_YEAR}/leaderboard/private/view/{AOC_LEADERBOARD_ID}.json"
 
 
@@ -141,7 +141,7 @@ def main():
     schedule.every(15).minutes.do(job_check_new_stars)
     schedule.every().day.at("23:59").do(job_daily_summary)
 
-    print("Scheduler started. Press Ctrl+C to exit.")
+    print("Scheduler started.")
     while True:
         schedule.run_pending()
         time.sleep(5)

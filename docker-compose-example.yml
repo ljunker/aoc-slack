@@ -1,6 +1,6 @@
 services:
   aoc-slack-bot:
-    build: .
+    image: kryptikker/aoc-slack:latest
     container_name: aoc-slack-bot
     restart: unless-stopped
     environment:
@@ -8,6 +8,7 @@ services:
       AOC_LEADERBOARD_ID: "<leaderboard id>"
       AOC_SESSION: "<session token>"
       SLACK_WEBHOOK_URL: "<webhook url for the channel>"
+      STATE_FILE: "/data/aoc_state.json"
       TZ: "Europe/Berlin"
     volumes:
       - aoc-slack-state:/data
