@@ -145,8 +145,6 @@ def main():
         lb = fetch_leaderboard()
         current = extract_star_set(lb)
         save_star_set(current)
-    job_check_new_stars()
-    job_daily_summary()
 
     schedule.every(15).minutes.do(job_check_new_stars)
     schedule.every().day.at("05:59").do(job_daily_summary)
