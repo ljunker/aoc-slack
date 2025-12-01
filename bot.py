@@ -38,7 +38,7 @@ def extract_star_set(leaderboard_json):
         completion = member.get("completion_day_level", {})
         for day_str, parts in completion.items():
             for part_str, info in parts.items():
-                star_set.add((str(member_id), int(day_str), int(part_str)))
+                star_set.add((str(member_id), int(day_str), info.get('get_star_ts'), int(part_str)))
     return star_set
 
 
@@ -56,11 +56,11 @@ def load_previous_star_set():
         return set()
     with STATE_FILE.open("r", encoding="utf-8") as f:
         raw = json.load(f)
-    return {(str(m), int(d), int(p)) for m, d, p in raw}
+    return {(str(m), int(d), t, int(p)) for m, d, t, p in raw}
 
 
 def save_star_set(star_set):
-    as_list = [[m, d, p] for (m, d, p) in sorted(star_set)]
+    as_list = [[m, d, t, p] for (m, d, t, p) in sorted(star_set)]
     with STATE_FILE.open("w", encoding="utf-8") as f:
         json.dump(as_list, f, indent=2)
 
@@ -93,7 +93,7 @@ def job_check_new_stars():
     members = lb.get("members", {})
     member_by_id = {str(m["id"]): m for m in members.values()}
 
-    for member_id, day, part in sorted(new_stars, key=lambda x: (x[1], x[2], x[0])):
+    for member_id, day, ts, part in sorted(new_stars, key=lambda x: (x[2])):
         m = member_by_id.get(member_id)
         display_name = member_name(m) if m else f"Member {member_id}"
 
@@ -115,19 +115,27 @@ def job_daily_summary():
     members = list(lb.get("members", {}).values())
 
     members.sort(key=lambda m: m.get("local_score", 0), reverse=True)
+    max_name_len = (max(len(member_name(m)) for m in members))
+    max_name_len = max(max_name_len, 30)
 
     now = dt.datetime.now(tz.gettz(TIMEZONE))
     header = f"*Advent of Code {AOC_YEAR} – Stand {now.strftime('%Y-%m-%d %H:%M')}*"
 
     lines = []
+    rank = 0
+    prev_score = None
     for idx, m in enumerate(members, start=1):
         name = member_name(m)
         stars = m.get("stars", 0)
         score = m.get("local_score", 0)
-        lines.append(f"{idx:2}. {name}: {stars}⭐ – {score} pts")
+        if score != prev_score:
+            prev_score = score
+            rank = idx
+        lines.append(f"{rank:>3}. {name:<{max_name_len}}: {stars:>3}* – {score:>5} pts")
 
-    text = header + "\n\n" + "\n".join(lines)
+    text = header + "\n\n" + "```\n" + "\n".join(lines) + "\n```"
     print("Posting daily summary")
+    print(text)
     slack_post(text)
 
 
@@ -137,6 +145,8 @@ def main():
         lb = fetch_leaderboard()
         current = extract_star_set(lb)
         save_star_set(current)
+    job_check_new_stars()
+    job_daily_summary()
 
     schedule.every(15).minutes.do(job_check_new_stars)
     schedule.every().day.at("05:59").do(job_daily_summary)
