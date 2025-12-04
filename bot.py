@@ -1,12 +1,12 @@
-import os
-import json
-import time
 import datetime as dt
+import json
+import os
+import time
 from pathlib import Path
 
 import requests
-from dateutil import tz
 import schedule
+from dateutil import tz
 
 # === Config ===
 AOC_YEAR = int(os.getenv("AOC_YEAR", dt.datetime.now().year))
@@ -93,12 +93,18 @@ def job_check_new_stars():
     members = lb.get("members", {})
     member_by_id = {str(m["id"]): m for m in members.values()}
 
-    for member_id, day, ts, part in sorted(new_stars, key=lambda x: (x[2])):
+    tzinfo = tz.gettz(TIMEZONE)
+
+    for member_id, day, ts, part in sorted(new_stars, key=lambda x: x[2]):
         m = member_by_id.get(member_id)
         display_name = member_name(m) if m else f"Member {member_id}"
 
+        dt_local = dt.datetime.fromtimestamp(ts, tzinfo)
+        ts_str = dt_local.strftime("%Y-%m-%d %H:%M:%S %Z")
+
         part_text = "Part 1" if part == 1 else "Part 2"
-        msg = f"{display_name} solved Day {day} {part_text} ⭐"
+        msg = f"{display_name} solved Day {day} {part_text} ⭐ at {ts_str}"
+
         print("Announcing:", msg)
         slack_post(msg)
 
