@@ -118,6 +118,12 @@ def job_daily_summary():
         return
     print("[job_daily_summary] Running...")
     lb = fetch_leaderboard()
+    current = extract_star_set(lb)
+    previous = load_previous_star_set()
+    new_stars = current - previous
+    if not new_stars:
+        print("No Changes. Not posting leaderboard.")
+        return
     members = list(lb.get("members", {}).values())
 
     members.sort(key=lambda m: m.get("local_score", 0), reverse=True)
